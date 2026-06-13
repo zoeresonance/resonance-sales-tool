@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Meta Performance Analyzer",
+  title: "Resonance Score",
   description:
-    "Diagnose your Meta Ads and organic posts with a 50-check AI audit. Get your health score, quick wins, and actionable insights in 60 seconds.",
+    "Instantly score any brand's organic social media presence. Enter a Facebook or Instagram URL to see how well their content resonates with their audience.",
 };
 
 export default function RootLayout({
