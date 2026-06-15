@@ -45,6 +45,8 @@ export async function scrapeInstagram(url: string): Promise<InstagramData> {
     caption?: string;
     type?: string;
     timestamp?: string;
+    displayUrl?: string;
+    thumbnailUrl?: string;
   };
 
   const latestPosts: ApifyPost[] = (profile.latestPosts as ApifyPost[]) ?? [];
@@ -64,6 +66,7 @@ export async function scrapeInstagram(url: string): Promise<InstagramData> {
       caption: p.caption?.slice(0, 300) ?? "",
       type: p.type ?? "Image",
       timestamp: p.timestamp ? Math.floor(new Date(p.timestamp).getTime() / 1000) : 0,
+      imageUrl: p.displayUrl ?? p.thumbnailUrl ?? undefined,
     })),
   };
 }

@@ -27,10 +27,13 @@ Does the content show real people, real stories, and real community?
 - Look for: content that makes an outsider think "I want to be part of that"
 
 ### 3. Content Quality & Format
-- Video/Reel quality signals: does caption language or post type suggest dynamic, engaging content vs. passive recording?
-- Format variety: mix of Reels, carousels, photos
-- Visual branding: does the content suggest a consistent look and feel, or is it visually scattered?
-- NOTE: Full visual analysis (camera angles, editing speed, text readability, flattering shots) requires manual review of the actual video — flag these as visual checklist items in your recommendations when relevant
+You will receive actual images for the static posts. Use them to evaluate:
+- **Visual branding consistency**: Are colors, fonts, overlays, and overall aesthetic consistent across posts? Does it look like a coherent brand or a scattered feed?
+- **People presence and framing**: Do posts show real people? Are the shots flattering — good angles, well-lit, close-up where appropriate? Or do people appear small, distant, or unflattering?
+- **Space fullness**: When the venue/space is shown, does it look full and alive, or empty and institutional? An empty room reads as unwelcoming to a newcomer.
+- **Invitingness**: Does the visual feel warm, energetic, and approachable? Or formal, stiff, and exclusive?
+- Format variety: mix of Reels, carousels, static images
+- For Reels (no image provided): flag camera angles, editing speed, text readability, and close-up framing as items requiring manual visual review
 
 ### 4. Engagement Trend
 Using the engagement-over-time data provided, is audience engagement growing, flat, or declining over the observed period? This is a leading indicator of whether the content strategy is working.

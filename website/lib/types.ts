@@ -4,6 +4,7 @@ export interface InstagramPost {
   caption: string;
   type: string;
   timestamp: number;
+  imageUrl?: string;
 }
 
 export interface InstagramData {
