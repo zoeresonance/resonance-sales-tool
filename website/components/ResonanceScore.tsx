@@ -48,7 +48,7 @@ export default function ResonanceScore({ result, onReset, urls }: Props) {
           This Resonance Score is based on publicly available data: profile metadata, recent post captions, engagement counts, and static post images pulled from Instagram{result.platformsAnalyzed.includes("Facebook") ? " and Facebook" : ""}. It does not include video content, Stories, paid ads, audience demographics, or historical performance beyond the most recent posts.
         </p>
         <p className="mt-2">
-          This report is intended as a starting-point conversation — a snapshot of how your organic content lands with someone encountering your brand for the first time. A full Resonance Audit includes manual review of video content, a complete content calendar analysis, audience insights, and a custom strategic roadmap.
+          This report is intended as a starting-point conversation — a snapshot of how your organic content lands with someone encountering your brand for the first time. A deeper audit will go further.
         </p>
       </div>
 
