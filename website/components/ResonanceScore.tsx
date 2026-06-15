@@ -27,13 +27,20 @@ function scoreBar(score: number) {
 interface Props {
   result: ResonanceScoreResult;
   onReset: () => void;
+  urls?: { instagram: string; facebook: string };
 }
 
-export default function ResonanceScore({ result, onReset }: Props) {
+export default function ResonanceScore({ result, onReset, urls }: Props) {
   const sc = scoreColor(result.overallScore);
 
+  function handlePrint() {
+    document.body.classList.add("printing");
+    window.print();
+    document.body.classList.remove("printing");
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 print-region">
       {/* Score header */}
       <div className="bg-[#1e1e1e] rounded-2xl border border-[#2d2d2d] p-8 flex flex-col sm:flex-row items-center gap-6">
         {/* Ring */}
@@ -63,13 +70,39 @@ export default function ResonanceScore({ result, onReset }: Props) {
               <span key={p} className="text-xs bg-brand-dark text-brand-300 px-2 py-0.5 rounded-full font-medium">{p}</span>
             ))}
           </div>
+
+          {/* URLs */}
+          {(urls?.instagram || urls?.facebook) && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1 mb-2 mt-1">
+              {urls.instagram && (
+                <a href={urls.instagram} target="_blank" rel="noopener noreferrer" className="text-xs text-slate-500 hover:text-slate-300 transition-colors truncate max-w-xs">
+                  {urls.instagram}
+                </a>
+              )}
+              {urls.facebook && (
+                <a href={urls.facebook} target="_blank" rel="noopener noreferrer" className="text-xs text-slate-500 hover:text-slate-300 transition-colors truncate max-w-xs">
+                  {urls.facebook}
+                </a>
+              )}
+            </div>
+          )}
+
           <p className="text-slate-300 text-sm leading-relaxed">{result.summary}</p>
-          <button
-            onClick={onReset}
-            className="mt-3 text-xs text-slate-400 hover:text-slate-200 underline transition-colors"
-          >
-            ← Analyze another
-          </button>
+
+          <div className="flex items-center gap-4 mt-3">
+            <button
+              onClick={onReset}
+              className="text-xs text-slate-400 hover:text-slate-200 underline transition-colors"
+            >
+              ← Analyze another
+            </button>
+            <button
+              onClick={handlePrint}
+              className="text-xs font-medium text-slate-300 border border-[#2d2d2d] bg-[#252525] hover:bg-[#2d2d2d] px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Download PDF
+            </button>
+          </div>
         </div>
       </div>
 

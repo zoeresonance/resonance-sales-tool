@@ -13,6 +13,7 @@ export default function Home() {
   const [result, setResult] = useState<ResonanceScoreResult | null>(null);
   const [scrapeError, setScrapeError] = useState<string | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const [submittedUrls, setSubmittedUrls] = useState<{ instagram: string; facebook: string }>({ instagram: "", facebook: "" });
 
   async function handleAnalyze(instagramUrl: string, facebookUrl: string) {
     setStep("scraping");
@@ -20,6 +21,7 @@ export default function Home() {
     setResult(null);
     setScrapeError(null);
     setAnalyzeError(null);
+    setSubmittedUrls({ instagram: instagramUrl, facebook: facebookUrl });
 
     // Step 1: Scrape (Apify — only runs once per submission)
     let scrape: ScrapeResult;
@@ -69,6 +71,7 @@ export default function Home() {
     setResult(null);
     setScrapeError(null);
     setAnalyzeError(null);
+    setSubmittedUrls({ instagram: "", facebook: "" });
   }
 
   const loading = step === "scraping" || step === "analyzing";
@@ -195,7 +198,7 @@ export default function Home() {
                 )}
               </div>
             )}
-            <ResonanceScore result={result} onReset={handleReset} />
+            <ResonanceScore result={result} onReset={handleReset} urls={submittedUrls} />
           </>
         )}
       </main>
