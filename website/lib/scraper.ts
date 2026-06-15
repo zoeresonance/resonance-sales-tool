@@ -68,45 +68,57 @@ export async function scrapeInstagram(url: string): Promise<InstagramData> {
   };
 }
 
-// Apify Facebook Pages Scraper
+// Apify Facebook — runs Pages Scraper (metadata) + Posts Scraper (content) in parallel
 export async function scrapeFacebook(url: string): Promise<FacebookData> {
   const fbUrl = normalizeFacebookUrl(url);
 
   const token = process.env.APIFY_API_TOKEN;
   if (!token) throw new Error("APIFY_API_TOKEN is not configured");
 
-  const res = await fetch(
-    `https://api.apify.com/v2/acts/apify~facebook-pages-scraper/run-sync-get-dataset-items?token=${token}&timeout=120`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ startUrls: [{ url: fbUrl }], maxPosts: 5 }),
-    }
-  );
+  const apifyFetch = (actor: string, body: unknown) =>
+    fetch(
+      `https://api.apify.com/v2/acts/${actor}/run-sync-get-dataset-items?token=${token}&timeout=120`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }
+    );
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    console.error(`[Facebook scraper] HTTP ${res.status}:`, body.slice(0, 500));
-    throw new Error(`Apify Facebook scraper returned HTTP ${res.status}: ${body.slice(0, 200)}`);
+  const [pageRes, postsRes] = await Promise.all([
+    apifyFetch("apify~facebook-pages-scraper", { startUrls: [{ url: fbUrl }] }),
+    apifyFetch("apify~facebook-posts-scraper", { startUrls: [{ url: fbUrl }], resultsLimit: 10 }),
+  ]);
+
+  // Page metadata (required — throw if this fails)
+  if (!pageRes.ok) {
+    const body = await pageRes.text().catch(() => "");
+    throw new Error(`Facebook pages scraper HTTP ${pageRes.status}: ${body.slice(0, 200)}`);
   }
+  const pageItems: Record<string, unknown>[] = await pageRes.json();
+  console.log(`[Facebook pages] ${pageItems.length} item(s). Keys:`, pageItems[0] ? Object.keys(pageItems[0]).join(", ") : "none");
+  const page = pageItems[0];
+  if (!page) throw new Error("Facebook page not found or is private");
 
-  const items: Record<string, unknown>[] = await res.json();
-  console.log(`[Facebook scraper] Apify returned ${items.length} item(s). Keys:`, items[0] ? Object.keys(items[0]).join(", ") : "none");
-  const page = items[0];
-  if (!page) throw new Error("Facebook page not found or is private — Apify returned empty dataset");
-
-  // Apify field names: title/pageName, followers, likes, intro (not about), no posts array
-  type ApifyFBPost = { text?: string; time?: string };
-  const posts: ApifyFBPost[] = (page.posts as ApifyFBPost[]) ?? [];
+  // Posts (best-effort — log but don't throw on failure)
+  type ApifyFBPost = { text?: string; postText?: string; time?: string; timestamp?: string; likesCount?: number; commentsCount?: number };
+  let posts: ApifyFBPost[] = [];
+  if (postsRes.ok) {
+    const postItems: ApifyFBPost[] = await postsRes.json();
+    console.log(`[Facebook posts] ${postItems.length} post(s). Sample keys:`, postItems[0] ? Object.keys(postItems[0]).join(", ") : "none");
+    posts = postItems;
+  } else {
+    console.warn(`[Facebook posts] scraper returned HTTP ${postsRes.status}`);
+  }
 
   return {
     name: (page.title as string) ?? (page.pageName as string) ?? url,
     followers: (page.followers as number) ?? null,
     likes: (page.likes as number) ?? null,
     about: (page.intro as string) ?? (page.info as string) ?? null,
-    recentPosts: posts.slice(0, 5).map((p) => ({
-      text: p.text?.slice(0, 300) ?? "",
-      timestamp: p.time,
+    recentPosts: posts.slice(0, 10).map((p) => ({
+      text: (p.text ?? p.postText ?? "").slice(0, 300),
+      timestamp: p.time ?? p.timestamp,
     })),
   };
 }
