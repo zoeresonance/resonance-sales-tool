@@ -1,7 +1,10 @@
 {
   "functions": {
-    "website/app/api/score/route.ts": {
+    "website/app/api/scrape/route.ts": {
       "maxDuration": 120
+    },
+    "website/app/api/analyze/route.ts": {
+      "maxDuration": 60
     }
   }
 }
