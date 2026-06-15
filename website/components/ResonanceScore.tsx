@@ -2,11 +2,11 @@
 
 import type { ResonanceScoreResult } from "@/lib/types";
 
-function gradeColor(grade: string): string {
-  if (grade.startsWith("A")) return "text-emerald-400";
-  if (grade === "B") return "text-teal-400";
-  if (grade === "C") return "text-yellow-400";
-  if (grade === "D") return "text-orange-400";
+function scoreColor(score: number): string {
+  if (score >= 80) return "text-emerald-400";
+  if (score >= 65) return "text-teal-400";
+  if (score >= 50) return "text-yellow-400";
+  if (score >= 35) return "text-orange-400";
   return "text-red-400";
 }
 
@@ -30,7 +30,7 @@ interface Props {
 }
 
 export default function ResonanceScore({ result, onReset }: Props) {
-  const gc = gradeColor(result.grade);
+  const sc = scoreColor(result.overallScore);
 
   return (
     <div className="space-y-6">
@@ -47,12 +47,12 @@ export default function ResonanceScore({ result, onReset }: Props) {
               strokeLinecap="round"
               strokeDasharray={`${(result.overallScore / 100) * 327} 327`}
               transform="rotate(-90 60 60)"
-              className={gc}
+              className={sc}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-3xl font-bold ${gc}`}>{result.overallScore}</span>
-            <span className={`text-lg font-bold ${gc}`}>{result.grade}</span>
+            <span className={`text-3xl font-bold ${sc}`}>{result.overallScore}</span>
+            <span className="text-xs text-slate-500">/100</span>
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export default function ResonanceScore({ result, onReset }: Props) {
             <div key={d.name}>
               <div className="flex items-center justify-between mb-0.5">
                 <span className="text-sm font-medium text-slate-200">{d.name}</span>
-                <span className={`text-sm font-bold ${gradeColor(d.grade)}`}>{d.score} <span className="text-xs">{d.grade}</span></span>
+                <span className={`text-sm font-bold ${scoreColor(d.score)}`}>{d.score}<span className="text-slate-500 text-xs font-normal">/100</span></span>
               </div>
               {scoreBar(d.score)}
               <p className="text-xs text-slate-400 mt-1.5">{d.insight}</p>
@@ -89,6 +89,21 @@ export default function ResonanceScore({ result, onReset }: Props) {
           ))}
         </div>
       </div>
+
+      {/* Brand Character & Story */}
+      {result.brand && (
+        <div className="bg-[#1e1e1e] rounded-2xl border border-[#2d2d2d] p-6 space-y-5">
+          <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">Brand Analysis</h3>
+          <div>
+            <p className="text-xs font-semibold text-brand-300 uppercase tracking-wide mb-1.5">Brand Character</p>
+            <p className="text-sm text-slate-300 leading-relaxed">{result.brand.character}</p>
+          </div>
+          <div className="border-t border-[#2d2d2d] pt-5">
+            <p className="text-xs font-semibold text-brand-300 uppercase tracking-wide mb-1.5">Brand Story</p>
+            <p className="text-sm text-slate-300 leading-relaxed">{result.brand.story}</p>
+          </div>
+        </div>
+      )}
 
       {/* Strengths & Gaps */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

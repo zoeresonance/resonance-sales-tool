@@ -41,7 +41,6 @@ export interface ScrapeResult {
 export interface ResonanceDimension {
   name: string;
   score: number;
-  grade: string;
   insight: string;
 }
 
@@ -52,13 +51,18 @@ export interface Recommendation {
   suggestion: string;
 }
 
+export interface BrandAnalysis {
+  character: string;
+  story: string;
+}
+
 export interface ResonanceScoreResult {
   overallScore: number;
-  grade: string;
   summary: string;
   dimensions: ResonanceDimension[];
   strengths: string[];
   gaps: string[];
   recommendations: Recommendation[];
+  brand: BrandAnalysis;
   platformsAnalyzed: string[];
 }

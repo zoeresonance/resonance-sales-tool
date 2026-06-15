@@ -28,34 +28,24 @@ export default function UrlForm({ onAnalyze, loading }: Props) {
         <label className="block text-sm font-semibold text-slate-200">
           Instagram Profile URL
         </label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm select-none">
-            instagram.com/
-          </span>
-          <input
-            value={instagramUrl}
-            onChange={(e) => setInstagramUrl(e.target.value)}
-            placeholder="yourbrand"
-            className="w-full text-sm border border-[#2d2d2d] rounded-xl pl-[8.5rem] pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent bg-[#2a2a2a] text-slate-100 placeholder-slate-500"
-          />
-        </div>
+        <input
+          value={instagramUrl}
+          onChange={(e) => setInstagramUrl(e.target.value)}
+          placeholder="https://www.instagram.com/yourbrand"
+          className="w-full text-sm border border-[#2d2d2d] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent bg-[#2a2a2a] text-slate-100 placeholder-slate-500"
+        />
       </div>
 
       <div className="space-y-1.5">
         <label className="block text-sm font-semibold text-slate-200">
           Facebook Page URL
         </label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm select-none">
-            facebook.com/
-          </span>
-          <input
-            value={facebookUrl}
-            onChange={(e) => setFacebookUrl(e.target.value)}
-            placeholder="yourbrand"
-            className="w-full text-sm border border-[#2d2d2d] rounded-xl pl-[8.5rem] pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent bg-[#2a2a2a] text-slate-100 placeholder-slate-500"
-          />
-        </div>
+        <input
+          value={facebookUrl}
+          onChange={(e) => setFacebookUrl(e.target.value)}
+          placeholder="https://www.facebook.com/yourbrand"
+          className="w-full text-sm border border-[#2d2d2d] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-transparent bg-[#2a2a2a] text-slate-100 placeholder-slate-500"
+        />
       </div>
 
       {error && (

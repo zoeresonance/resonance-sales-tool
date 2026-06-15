@@ -4,31 +4,30 @@ export const SALES_RESONANCE_SYSTEM_PROMPT = `You are an expert social media ana
 
 ## Scoring Framework
 
-Evaluate across five dimensions (each 0–100):
+Evaluate across four dimensions (each 0–100). Only score dimensions where you have actual data to support the evaluation:
 
 1. **Content Quality & Variety** — Format mix (video, image, carousel, Reels), production value signals, creative consistency
 2. **Engagement Rate** — Likes + comments relative to follower count; benchmark: <1% poor, 1–3% average, 3–6% good, 6%+ excellent for Instagram; Facebook benchmarks are ~50% lower
-3. **Posting Consistency** — Frequency and regularity of posts; benchmark: 3–5x/week Instagram, 3–5x/week Facebook
-4. **Audience Growth Signals** — Follower-to-following ratio, verified status, content reach indicators
-5. **Brand Clarity** — Bio completeness, link in bio, name/handle alignment, messaging consistency across captions
+3. **Audience Growth Signals** — Follower-to-following ratio, verified status, content reach indicators
+4. **Brand Clarity** — Bio completeness, link in bio, name/handle alignment, messaging consistency across captions
 
 ## Overall Score Calculation
-Weight: Content Quality 25%, Engagement Rate 30%, Posting Consistency 20%, Audience Growth 15%, Brand Clarity 10%
+Weight: Content Quality 30%, Engagement Rate 40%, Audience Growth 15%, Brand Clarity 15%
 
-## Grading
-90–100: A+ | 80–89: A | 70–79: B | 60–69: C | 50–59: D | <50: F
+## Brand Analysis
+Using the post captions and bio provided, identify:
+- **Brand Character**: The voice and tone through which their story is communicated. What personality traits come through? (e.g., authoritative, playful, aspirational, community-focused) Is it consistent or inconsistent across posts?
+- **Brand Story**: The foundational narrative that bridges their identity with why their audience should care. What themes, values, or missions emerge? What story are they telling — or failing to tell?
 
 ## Output — Strict JSON, no markdown
 
 {
   "overallScore": <number 0-100>,
-  "grade": <"A+"|"A"|"B"|"C"|"D"|"F">,
   "summary": <2-3 sentence executive summary of their current organic presence and biggest opportunity>,
   "dimensions": [
     {
       "name": <dimension name>,
       "score": <0-100>,
-      "grade": <letter grade>,
       "insight": <1-2 sentences specific to their actual data>
     }
   ],
@@ -42,10 +41,14 @@ Weight: Content Quality 25%, Engagement Rate 30%, Posting Consistency 20%, Audie
       "suggestion": <specific, actionable improvement>
     }
   ],
+  "brand": {
+    "character": <2-3 sentences describing the voice, tone, and personality traits observed across their content>,
+    "story": <2-3 sentences describing the narrative they are telling — or the narrative gap — and how it connects or fails to connect their identity with their audience's interests>
+  },
   "platformsAnalyzed": [<"Instagram"|"Facebook"> — only include platforms with real data]
 }
 
-Be specific. Reference actual numbers from the data (follower counts, engagement rates, post types). Do not invent data not present. If a platform returned no data, exclude it from platformsAnalyzed and note it in the summary.`;
+Be specific. Reference actual numbers (follower counts, engagement rates, post types) and quote or paraphrase actual caption language when describing brand character and story. Do not invent data not present.`;
 
 function fmtNum(n: number | null | undefined): string {
   if (n == null) return "N/A";
@@ -83,10 +86,9 @@ export function buildSalesPrompt(data: ScrapeResult): string {
 - Avg engagement per post: ${avgEngagement}
 - Engagement rate (avg engagement / followers): ${engRate}%
 - Format breakdown: ${imageCount} images, ${videoCount} videos/Reels, ${carouselCount} carousels
-- Sample captions:
+- Post captions (for brand voice analysis):
 ${posts
-  .slice(0, 5)
-  .map((p, i) => `  ${i + 1}. [${p.type}] Likes: ${p.likes}, Comments: ${p.comments} — "${p.caption.slice(0, 150) || "(no caption)"}"`)
+  .map((p, i) => `  ${i + 1}. [${p.type}] Likes: ${p.likes}, Comments: ${p.comments} — "${p.caption.slice(0, 200) || "(no caption)"}"`)
   .join("\n")}`);
   } else if (data.instagramError) {
     parts.push(`## Instagram\nFailed to retrieve data: ${data.instagramError}`);
