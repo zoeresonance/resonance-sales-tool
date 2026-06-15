@@ -31,4 +31,31 @@
     top: 0;
     width: 100%;
   }
+
+  /* Prevent cards and their contents from splitting across pages */
+  .print-region > * {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep each dimension row, recommendation card, strength/gap item together */
+  .print-region [class*="space-y"] > * {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Keep grid columns from orphaning */
+  .print-region .grid {
+    display: block;
+  }
+  .print-region .grid > * {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* Add breathing room between sections */
+  .print-region > * + * {
+    margin-top: 1rem;
+  }
 }
