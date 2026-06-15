@@ -6,126 +6,101 @@ function extractInstagramUsername(url: string): string | null {
     const parts = u.pathname.split("/").filter(Boolean);
     return parts[0] ?? null;
   } catch {
-    // bare username
     const clean = url.replace(/^@/, "").trim();
     return clean || null;
   }
 }
 
-function extractFacebookPage(url: string): string | null {
-  try {
-    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
-    const parts = u.pathname.split("/").filter(Boolean);
-    if (parts[0] === "pages" && parts[2]) return parts[2];
-    return parts[0] ?? null;
-  } catch {
-    return url.replace(/^@/, "").trim() || null;
-  }
+function normalizeFacebookUrl(url: string): string {
+  if (url.startsWith("http")) return url;
+  return `https://www.facebook.com/${url.replace(/^@/, "").trim()}`;
 }
 
+// Apify Instagram Profile Scraper
 export async function scrapeInstagram(url: string): Promise<InstagramData> {
   const username = extractInstagramUsername(url);
   if (!username) throw new Error("Could not extract Instagram username from URL");
 
+  const token = process.env.APIFY_API_TOKEN;
+  if (!token) throw new Error("APIFY_API_TOKEN is not configured");
+
   const res = await fetch(
-    `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`,
+    `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=${token}&timeout=120`,
     {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "x-ig-app-id": "936619743392459",
-        Accept: "*/*",
-        "Accept-Language": "en-US,en;q=0.9",
-        Referer: `https://www.instagram.com/${username}/`,
-      },
-      cache: "no-store",
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ usernames: [username], resultsLimit: 12 }),
     }
   );
 
-  if (!res.ok) throw new Error(`Instagram returned HTTP ${res.status}`);
+  if (!res.ok) throw new Error(`Apify Instagram scraper returned HTTP ${res.status}`);
 
-  const data = await res.json();
-  const user = data?.data?.user;
-  if (!user) throw new Error("Instagram profile not found or is private");
+  const items: Record<string, unknown>[] = await res.json();
+  const profile = items[0];
+  if (!profile) throw new Error("Instagram profile not found or is private");
 
-  const edges: unknown[] = user.edge_owner_to_timeline_media?.edges ?? [];
+  type ApifyPost = {
+    likesCount?: number;
+    commentsCount?: number;
+    caption?: string;
+    type?: string;
+    timestamp?: string;
+  };
+
+  const latestPosts: ApifyPost[] = (profile.latestPosts as ApifyPost[]) ?? [];
 
   return {
-    username: user.username,
-    fullName: user.full_name ?? "",
-    bio: user.biography ?? "",
-    followers: user.edge_followed_by?.count ?? 0,
-    following: user.edge_follow?.count ?? 0,
-    postCount: user.edge_owner_to_timeline_media?.count ?? 0,
-    isVerified: user.is_verified ?? false,
-    externalUrl: user.external_url ?? null,
-    recentPosts: edges.slice(0, 12).map((e: unknown) => {
-      const n = (e as { node: Record<string, unknown> }).node;
-      const captionEdges = (n.edge_media_to_caption as { edges?: { node: { text: string } }[] })?.edges ?? [];
-      return {
-        likes: (n.edge_liked_by as { count?: number })?.count ?? 0,
-        comments: (n.edge_media_to_comment as { count?: number })?.count ?? 0,
-        caption: captionEdges[0]?.node?.text?.slice(0, 300) ?? "",
-        type: (n.__typename as string) ?? "GraphImage",
-        timestamp: (n.taken_at_timestamp as number) ?? 0,
-      };
-    }),
+    username: (profile.username as string) ?? username,
+    fullName: (profile.fullName as string) ?? "",
+    bio: (profile.biography as string) ?? "",
+    followers: (profile.followersCount as number) ?? 0,
+    following: (profile.followsCount as number) ?? 0,
+    postCount: (profile.postsCount as number) ?? 0,
+    isVerified: (profile.verified as boolean) ?? false,
+    externalUrl: (profile.externalUrl as string) ?? null,
+    recentPosts: latestPosts.slice(0, 12).map((p) => ({
+      likes: p.likesCount ?? 0,
+      comments: p.commentsCount ?? 0,
+      caption: p.caption?.slice(0, 300) ?? "",
+      type: p.type ?? "Image",
+      timestamp: p.timestamp ? Math.floor(new Date(p.timestamp).getTime() / 1000) : 0,
+    })),
   };
 }
 
+// Apify Facebook Pages Scraper
 export async function scrapeFacebook(url: string): Promise<FacebookData> {
-  const pageId = extractFacebookPage(url);
-  if (!pageId) throw new Error("Could not extract Facebook page identifier from URL");
+  const fbUrl = normalizeFacebookUrl(url);
 
-  const res = await fetch(`https://m.facebook.com/${pageId}`, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36",
-      "Accept-Language": "en-US,en;q=0.9",
-      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    },
-    cache: "no-store",
-  });
+  const token = process.env.APIFY_API_TOKEN;
+  if (!token) throw new Error("APIFY_API_TOKEN is not configured");
 
-  if (!res.ok) throw new Error(`Facebook returned HTTP ${res.status}`);
-
-  const html = await res.text();
-
-  const nameMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const name = nameMatch?.[1]?.replace(" | Facebook", "").trim() ?? pageId;
-
-  const followerPatterns = [
-    /(\d[\d,.]*)\s*(?:people follow|followers)/i,
-    /"follower_count"\s*:\s*(\d+)/,
-  ];
-  let followers: number | null = null;
-  for (const pat of followerPatterns) {
-    const m = html.match(pat);
-    if (m) {
-      followers = parseInt(m[1].replace(/[,.\s]/g, ""), 10);
-      break;
+  const res = await fetch(
+    `https://api.apify.com/v2/acts/apify~facebook-pages-scraper/run-sync-get-dataset-items?token=${token}&timeout=120`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ startUrls: [{ url: fbUrl }], maxPosts: 5 }),
     }
-  }
+  );
 
-  const likePatterns = [
-    /(\d[\d,.]*)\s*people like this/i,
-    /"like_count"\s*:\s*(\d+)/,
-  ];
-  let likes: number | null = null;
-  for (const pat of likePatterns) {
-    const m = html.match(pat);
-    if (m) {
-      likes = parseInt(m[1].replace(/[,.\s]/g, ""), 10);
-      break;
-    }
-  }
+  if (!res.ok) throw new Error(`Apify Facebook scraper returned HTTP ${res.status}`);
 
-  const aboutMatch = html.match(/class="[^"]*about[^"]*"[^>]*>([^<]{20,300})</i);
-  const about = aboutMatch?.[1]?.trim() ?? null;
+  const items: Record<string, unknown>[] = await res.json();
+  const page = items[0];
+  if (!page) throw new Error("Facebook page not found or is private");
 
-  // Extract visible post snippets
-  const postMatches = [...html.matchAll(/data-ft="[^"]*"[^>]*>([^<]{30,400})</g)];
-  const recentPosts = postMatches.slice(0, 5).map((m) => ({ text: m[1].trim() }));
+  type ApifyFBPost = { text?: string; time?: string };
+  const posts: ApifyFBPost[] = (page.posts as ApifyFBPost[]) ?? [];
 
-  return { name, followers, likes, about, recentPosts };
+  return {
+    name: (page.title as string) ?? (page.name as string) ?? url,
+    followers: (page.followers as number) ?? null,
+    likes: (page.likes as number) ?? null,
+    about: (page.about as string) ?? null,
+    recentPosts: posts.slice(0, 5).map((p) => ({
+      text: p.text?.slice(0, 300) ?? "",
+      timestamp: p.time,
+    })),
+  };
 }
