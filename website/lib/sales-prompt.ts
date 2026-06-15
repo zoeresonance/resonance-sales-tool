@@ -101,8 +101,9 @@ ${posts
     parts.push(`## Facebook (${fb.name})
 - Page likes: ${fmtNum(fb.likes)}
 - Page followers: ${fmtNum(fb.followers)}
-- About: ${fb.about || "(not available)"}
-- Recent post snippets: ${fb.recentPosts.length ? fb.recentPosts.map((p) => `"${p.text.slice(0, 150)}"`).join(" | ") : "none extracted"}`);
+- About/Intro: ${fb.about || "(not available)"}
+- Recent post text: ${fb.recentPosts.length ? fb.recentPosts.map((p) => `"${p.text.slice(0, 150)}"`).join(" | ") : "not available via scraper (page metadata only — do not treat absence of posts as a gap)"}
+NOTE: Facebook post-level data was not available from the scraper for this account. Evaluate Facebook based on page-level signals (followers, likes, about) only. Do not penalize for missing Facebook post data.`);
   } else if (data.facebookError) {
     parts.push(`## Facebook\nFailed to retrieve data: ${data.facebookError}`);
   }

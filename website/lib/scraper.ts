@@ -95,14 +95,15 @@ export async function scrapeFacebook(url: string): Promise<FacebookData> {
   const page = items[0];
   if (!page) throw new Error("Facebook page not found or is private — Apify returned empty dataset");
 
+  // Apify field names: title/pageName, followers, likes, intro (not about), no posts array
   type ApifyFBPost = { text?: string; time?: string };
   const posts: ApifyFBPost[] = (page.posts as ApifyFBPost[]) ?? [];
 
   return {
-    name: (page.title as string) ?? (page.name as string) ?? url,
+    name: (page.title as string) ?? (page.pageName as string) ?? url,
     followers: (page.followers as number) ?? null,
     likes: (page.likes as number) ?? null,
-    about: (page.about as string) ?? null,
+    about: (page.intro as string) ?? (page.info as string) ?? null,
     recentPosts: posts.slice(0, 5).map((p) => ({
       text: p.text?.slice(0, 300) ?? "",
       timestamp: p.time,
