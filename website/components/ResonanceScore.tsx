@@ -42,7 +42,7 @@ export default function ResonanceScore({ result, onReset, urls }: Props) {
   return (
     <div className="space-y-6 print-region">
       {/* Disclaimer */}
-      <div className="bg-[#1a1a2e] border border-[#2d2d4d] rounded-2xl p-5 text-sm text-slate-400 leading-relaxed">
+      <div className="bg-[#0f1f1f] border border-[#8bbfbf]/30 rounded-2xl p-5 text-sm text-slate-400 leading-relaxed">
         <p className="text-slate-300 font-semibold mb-1">About this report</p>
         <p>
           This Resonance Score is based on publicly available data: profile metadata, recent post captions, engagement counts, and static post images pulled from Instagram{result.platformsAnalyzed.includes("Facebook") ? " and Facebook" : ""}. It does not include video content, Stories, paid ads, audience demographics, or historical performance beyond the most recent posts.
