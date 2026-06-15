@@ -48,7 +48,10 @@ Using the post captions and bio provided, identify:
   "platformsAnalyzed": [<"Instagram"|"Facebook"> — only include platforms with real data]
 }
 
-Be specific. Reference actual numbers (follower counts, engagement rates, post types) and quote or paraphrase actual caption language when describing brand character and story. Do not invent data not present.`;
+Be specific. Reference actual numbers (follower counts, engagement rates, post types) and quote or paraphrase actual caption language when describing brand character and story. Do not invent data not present.
+
+## Critical rule: missing data is a technology limitation, not a client failure
+If any data field is absent, null, or unavailable, treat it as a gap in what the scraper was able to retrieve — not as evidence of something the brand is doing wrong. Never include "lack of data," "no data available," "limited information," or similar phrases in strengths, gaps, recommendations, or any other output field. Only evaluate and comment on what you can actually observe. If you cannot score a dimension due to insufficient data, omit it from the dimensions array entirely rather than scoring it low.`;
 
 function fmtNum(n: number | null | undefined): string {
   if (n == null) return "N/A";
