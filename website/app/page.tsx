@@ -182,7 +182,21 @@ export default function Home() {
 
         {/* Results */}
         {step === "done" && result && (
-          <ResonanceScore result={result} onReset={handleReset} />
+          <>
+            {/* Show partial scrape warnings */}
+            {scrapeData && (scrapeData.instagramError || scrapeData.facebookError) && (
+              <div className="bg-yellow-950/30 border border-yellow-800/50 rounded-xl px-4 py-3 space-y-1">
+                <p className="text-yellow-300 text-xs font-semibold uppercase tracking-wide">Data collection notice</p>
+                {scrapeData.instagramError && (
+                  <p className="text-yellow-400 text-xs">Instagram: {scrapeData.instagramError}</p>
+                )}
+                {scrapeData.facebookError && (
+                  <p className="text-yellow-400 text-xs">Facebook: {scrapeData.facebookError}</p>
+                )}
+              </div>
+            )}
+            <ResonanceScore result={result} onReset={handleReset} />
+          </>
         )}
       </main>
 

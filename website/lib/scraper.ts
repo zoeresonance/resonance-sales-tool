@@ -84,11 +84,16 @@ export async function scrapeFacebook(url: string): Promise<FacebookData> {
     }
   );
 
-  if (!res.ok) throw new Error(`Apify Facebook scraper returned HTTP ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error(`[Facebook scraper] HTTP ${res.status}:`, body.slice(0, 500));
+    throw new Error(`Apify Facebook scraper returned HTTP ${res.status}: ${body.slice(0, 200)}`);
+  }
 
   const items: Record<string, unknown>[] = await res.json();
+  console.log(`[Facebook scraper] Apify returned ${items.length} item(s). Keys:`, items[0] ? Object.keys(items[0]).join(", ") : "none");
   const page = items[0];
-  if (!page) throw new Error("Facebook page not found or is private");
+  if (!page) throw new Error("Facebook page not found or is private — Apify returned empty dataset");
 
   type ApifyFBPost = { text?: string; time?: string };
   const posts: ApifyFBPost[] = (page.posts as ApifyFBPost[]) ?? [];
