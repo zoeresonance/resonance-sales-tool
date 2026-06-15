@@ -66,9 +66,11 @@ export function buildSalesPrompt(data: ScrapeResult): string {
     const totalEngagement = posts.reduce((s, p) => s + p.likes + p.comments, 0);
     const avgEngagement = posts.length ? Math.round(totalEngagement / posts.length) : 0;
     const engRate = ig.followers > 0 ? ((avgEngagement / ig.followers) * 100).toFixed(2) : "N/A";
-    const videoCount = posts.filter((p) => p.type === "GraphVideo" || p.type === "XDTGraphVideo").length;
-    const carouselCount = posts.filter((p) => p.type === "GraphSidecar" || p.type === "XDTGraphSidecar").length;
-    const imageCount = posts.length - videoCount - carouselCount;
+    const isVideo = (t: string) => /video|reel/i.test(t);
+    const isCarousel = (t: string) => /sidecar|carousel|album/i.test(t);
+    const videoCount = posts.filter((p) => isVideo(p.type)).length;
+    const carouselCount = posts.filter((p) => isCarousel(p.type)).length;
+    const imageCount = posts.filter((p) => !isVideo(p.type) && !isCarousel(p.type)).length;
 
     parts.push(`## Instagram (@${ig.username})
 - Full name: ${ig.fullName || "not set"}
